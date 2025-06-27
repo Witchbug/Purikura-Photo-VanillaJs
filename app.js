@@ -1,4 +1,85 @@
 let currentPhoto = null;
+function showProcessingOverlay(message) {
+    // Remove existing overlay if any
+    hideProcessingOverlay();
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'processingOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        color: white;
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="
+            background: rgba(255, 107, 157, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        ">
+            <div style="font-size: 48px; margin-bottom: 20px;">🤖</div>
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${message}</div>
+            <div style="font-size: 16px; opacity: 0.9;">Please wait while AI processes your photo...</div>
+            <div style="
+                width: 40px;
+                height: 40px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top: 4px solid white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 20px auto 0;
+            "></div>
+        </div>
+    `;
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(overlay);
+}
+
+// Utility function to hide overlay
+function hideProcessingOverlay() {
+    const overlay = document.getElementById('processingOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+// Utility function to scroll to element smoothly
+function scrollToElement(elementId, offset = 0) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition + offset;
+        
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
+}
+
 let canvas, ctx;
 let isDrawing = false;
 let currentColor = '#ff6b9d';
@@ -239,11 +320,9 @@ function applyFilter(filterType, targetElement = null) {
 
 async function changeBackground(bgType) {
     const img = document.getElementById('mainPhoto');
-    const processingIndicator = document.getElementById('bgProcessing');
     
-    // Show processing indicator
-    processingIndicator.classList.remove('hidden');
-    processingIndicator.textContent = 'Processing background...';
+    // Show overlay instead of simple indicator
+    showProcessingOverlay('🌈 Changing Background');
     
     try {
         if (!segmentationModel) {
@@ -323,19 +402,24 @@ async function changeBackground(bgType) {
                 
                 console.log('Background replacement completed successfully');
                 
+                // Scroll to photo after processing
+                setTimeout(() => {
+                    scrollToElement('photoContainer', -50);
+                }, 500);
+                
             } catch (error) {
                 console.error('BodyPix segmentation error:', error);
                 // Fallback to simple method
                 changeBackgroundSimple(bgType);
             } finally {
-                processingIndicator.classList.add('hidden');
+                hideProcessingOverlay();
             }
         };
 
         imageElement.onerror = function() {
             console.error('Failed to load image for processing');
             changeBackgroundSimple(bgType);
-            processingIndicator.classList.add('hidden');
+            hideProcessingOverlay();
         };
         
         // Always load the original image for processing
@@ -344,7 +428,7 @@ async function changeBackground(bgType) {
     } catch (error) {
         console.error('Background processing error:', error);
         changeBackgroundSimple(bgType);
-        processingIndicator.classList.add('hidden');
+        hideProcessingOverlay();
     }
 }
 
@@ -402,13 +486,17 @@ function changeBackgroundSimple(bgType) {
         event.target.classList.add('selected');
     }
     
-    document.getElementById('bgProcessing').classList.add('hidden');
+    hideProcessingOverlay();
+    
+    // Scroll to photo after processing
+    setTimeout(() => {
+        scrollToElement('photoContainer', -50);
+    }, 300);
 }
 
 async function removeBackground() {
     const container = document.getElementById('photoContainer');
     const img = document.getElementById('mainPhoto');
-    const processingIndicator = document.getElementById('bgProcessing');
     
     if (!segmentationModel || !originalPhotoData) {
         // Fallback: just reset to original
@@ -424,9 +512,8 @@ async function removeBackground() {
         return;
     }
 
-    // Show processing indicator
-    processingIndicator.classList.remove('hidden');
-    processingIndicator.textContent = 'Removing background...';
+    // Show overlay instead of simple indicator
+    showProcessingOverlay('🚫 Removing Background');
     
     try {
         // Create image element for BodyPix processing - always use original photo
@@ -500,6 +587,11 @@ async function removeBackground() {
                 
                 console.log('Background removal completed successfully');
                 
+                // Scroll to photo after processing
+                setTimeout(() => {
+                    scrollToElement('photoContainer', -50);
+                }, 500);
+                
             } catch (error) {
                 console.error('Background removal error:', error);
                 // Fallback to simple reset
@@ -513,13 +605,13 @@ async function removeBackground() {
                 currentBackground = null;
                 document.querySelectorAll('.bg-option').forEach(opt => opt.classList.remove('selected'));
             } finally {
-                processingIndicator.classList.add('hidden');
+                hideProcessingOverlay();
             }
         };
 
         imageElement.onerror = function() {
             console.error('Failed to load image for background removal');
-            processingIndicator.classList.add('hidden');
+            hideProcessingOverlay();
         };
         
         // Always load the original image for processing
@@ -527,7 +619,7 @@ async function removeBackground() {
         
     } catch (error) {
         console.error('Background removal setup error:', error);
-        processingIndicator.classList.add('hidden');
+        hideProcessingOverlay();
     }
 }
 
@@ -552,6 +644,11 @@ function resetBackground() {
     document.querySelectorAll('.bg-option').forEach(opt => opt.classList.remove('selected'));
     
     console.log('Background reset to original');
+    
+    // Scroll to photo after reset
+    setTimeout(() => {
+        scrollToElement('photoContainer', -50);
+    }, 200);
 }
 
 function setDrawColor(color) {
@@ -637,6 +734,11 @@ function addSticker(emoji) {
     
     container.appendChild(sticker);
     placedStickers.push(sticker);
+    
+    // Scroll to photo after adding sticker
+    setTimeout(() => {
+        scrollToElement('photoContainer', -50);
+    }, 200);
 }
 
 function finishEditing() {
@@ -646,6 +748,11 @@ function finishEditing() {
     
     // Create final composite image
     createFinalImage();
+    
+    // Scroll to final image after processing
+    setTimeout(() => {
+        scrollToElement('finalCanvas', -100);
+    }, 800);
 }
 
 function createFinalImage() {
@@ -780,32 +887,16 @@ function createFinalImage() {
 }
 
 function downloadPhoto() {
-    const finalCanvas = document.getElementById('finalCanvas');
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    const link = document.createElement('a');
-    link.download = `purikura-photo-${timestamp}.png`;
-    link.href = finalCanvas.toDataURL('image/png', 1.0);
-    
-    // For mobile compatibility
-    if (navigator.userAgent.match(/iPhone|iPad|iPod|Android/i)) {
-        // Create a new window/tab to show the image
-        const newWindow = window.open();
-        newWindow.document.write(`
-            <html>
-                <head><title>Your Purikura Photo</title></head>
-                <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0;">
-                    <div style="text-align:center;">
-                        <img src="${link.href}" style="max-width:100%; max-height:90vh;">
-                        <br><br>
-                        <p>Long press the image above to save it to your device!</p>
-                    </div>
-                </body>
-            </html>
-        `);
-    } else {
-        // Desktop download
-        link.click();
-    }
+   const finalCanvas = document.getElementById('finalCanvas');
+   const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+   const link = document.createElement('a');
+   link.download = `purikura-photo-${timestamp}.png`;
+   link.href = finalCanvas.toDataURL('image/png', 1.0);
+   
+   // Direct download for all devices
+   document.body.appendChild(link);
+   link.click();
+   document.body.removeChild(link);
 }
 
 function startOver() {
