@@ -17,12 +17,3 @@ A kawaii-style photo booth application with AI-powered background removal, real-
 
 [View Demo](https://photofun.netlify.app/)
 
-
-## 🏗️ Architecture Overview
-
-### Frontend Architecture Pattern
-- **Vanilla JavaScript SPA** (Single Page Application)
-- **Component-based UI** without frameworks
-- **State management** through global variables
-- **Event-driven programming** model
-
