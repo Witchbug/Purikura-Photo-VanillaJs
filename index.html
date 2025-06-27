@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@latest"></script>
+    <title>✨ Purikura Photo Booth ✨</title>
+</head>
+<body>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="title">✨ Purikura Photo Booth ✨</h1>
+                <div class="step-indicator">
+                    <div class="step active" id="step1">📷</div>
+                    <div class="step" id="step2">🎨</div>
+                    <div class="step" id="step3">💾</div>
+                </div>
+            </div>
+    
+            <!-- Step 1: Photo Capture/Upload -->
+            <div id="photoStep" class="photo-section">
+                <div class="control-title">Take or Upload Your Photo!</div>
+                <div class="photo-container" id="photoContainer">
+                    <img id="mainPhoto" alt="Your photo">
+                    <div class="photo-placeholder" id="placeholder">
+                        <div class="camera-icon">📸</div>
+                        <div>Tap to add your photo!</div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="drawingCanvas"></canvas>
+                    </div>
+                </div>
+                <div class="button-group" style="margin-top: 15px;">
+                    <button class="btn" onclick="takePhoto()">📷 Take Photo</button>
+                    <button class="btn secondary" onclick="uploadPhoto()">📁 Upload Photo</button>
+                </div>
+                <input type="file" id="photoInput" class="file-input" accept="image/*">
+                <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
+            </div>
+    
+            <!-- Step 2: Editing Controls -->
+            <div id="editingStep" class="controls hidden">
+                <!-- Undo/Redo/Clear Controls - MOVED HERE -->
+                <div class="control-group">
+                    <div class="control-title">↶ ↷ Drawing Controls</div>
+                    <div class="undo-redo">
+                        <button class="btn small" id="undoBtn" onclick="undoDrawing()" disabled>↶ Undo</button>
+                        <button class="btn small" id="redoBtn" onclick="redoDrawing()" disabled>↷ Redo</button>
+                        <button class="btn secondary small" onclick="clearDrawing()">🗑️ Clear</button>
+                    </div>
+                </div>
+
+
+                <!-- Photo Filters -->
+                <div class="control-group">
+                    <div class="control-title">🌟 Photo Filters</div>
+                    <div class="filter-grid">
+                        <div class="filter-option selected" onclick="applyFilter('none')">✨ Original</div>
+                        <div class="filter-option" onclick="applyFilter('vintage')">📷 Vintage</div>
+                        <div class="filter-option" onclick="applyFilter('dreamy')">💭 Dreamy</div>
+                        <div class="filter-option" onclick="applyFilter('kawaii')">🌸 Kawaii</div>
+                        <div class="filter-option" onclick="applyFilter('neon')">🌈 Neon</div>
+                        <div class="filter-option" onclick="applyFilter('soft')">☁️ Soft</div>
+                    </div>
+                </div>
+    
+                <!-- Background Change -->
+                <div class="control-group">
+                    <div class="control-title">🌈 Change Background</div>
+                    <div class="background-grid">
+                        <div class="bg-option" style="background: linear-gradient(45deg, #ff9a9e, #fecfef);" onclick="changeBackground('gradient1')"></div>
+                        <div class="bg-option" style="background: linear-gradient(45deg, #a8e6cf, #dcedc1);" onclick="changeBackground('gradient2')"></div>
+                        <div class="bg-option" style="background: linear-gradient(45deg, #ffd3a5, #fd9853);" onclick="changeBackground('gradient3')"></div>
+                        <div class="bg-option" style="background: linear-gradient(45deg, #a8caba, #5d4e75);" onclick="changeBackground('gradient4')"></div>
+                        <div class="bg-option" style="background: linear-gradient(45deg, #89f7fe, #66a6ff);" onclick="changeBackground('gradient5')"></div>
+                        <div class="bg-option" style="background: linear-gradient(45deg, #fdbb2d, #22c1c3);" onclick="changeBackground('gradient6')"></div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn secondary small" onclick="removeBackground()">🚫 Remove BG</button>
+                        <button class="btn secondary small" onclick="resetBackground()">🔄 Reset</button>
+                    </div>
+                    <div id="bgProcessing" class="loading hidden">Processing background...</div>
+                </div>
+    
+                <!-- Drawing Tools -->
+                <div class="control-group">
+                    <div class="control-title">✏️ Draw & Doodle</div>
+                    <div class="drawing-tools">
+                        <div class="color-picker" style="background: #ff6b9d;" onclick="setDrawColor('#ff6b9d')"></div>
+                        <div class="color-picker" style="background: #4ecdc4;" onclick="setDrawColor('#4ecdc4')"></div>
+                        <div class="color-picker" style="background: #ffd93d;" onclick="setDrawColor('#ffd93d')"></div>
+                        <div class="color-picker" style="background: #6bcf7f;" onclick="setDrawColor('#6bcf7f')"></div>
+                        <div class="color-picker" style="background: #4d9de0;" onclick="setDrawColor('#4d9de0')"></div>
+                    </div>
+                    <div class="brush-size">
+                        <span>Size:</span>
+                        <input type="range" id="brushSize" min="2" max="20" value="5" onchange="setBrushSize(this.value)">
+                    </div>
+                </div>
+    
+                <!-- Stickers -->
+                <div class="control-group">
+                    <div class="control-title">✨ Add Stickers</div>
+                    <div class="sticker-grid">
+                        <div class="sticker" onclick="addSticker('💖')">💖</div>
+                        <div class="sticker" onclick="addSticker('⭐')">⭐</div>
+                        <div class="sticker" onclick="addSticker('🌙')">🌙</div>
+                        <div class="sticker" onclick="addSticker('🦄')">🦄</div>
+                        <div class="sticker" onclick="addSticker('🌸')">🌸</div>
+                        <div class="sticker" onclick="addSticker('🎀')">🎀</div>
+                        <div class="sticker" onclick="addSticker('✨')">✨</div>
+                        <div class="sticker" onclick="addSticker('💫')">💫</div>
+                        <div class="sticker" onclick="addSticker('🌺')">🌺</div>
+                        <div class="sticker" onclick="addSticker('🎊')">🎊</div>
+                        <div class="sticker" onclick="addSticker('💕')">💕</div>
+                        <div class="sticker" onclick="addSticker('🌟')">🌟</div>
+                    </div>
+                </div>
+    
+                <div class="button-group">
+                    <button class="btn" onclick="finishEditing()">✅ Finish Editing</button>
+                </div>
+            </div>
+    
+            <!-- Step 3: Final Result -->
+            <div id="finalStep" class="controls hidden">
+                <div class="control-title">🎉 Your Purikura is Ready!</div>
+                <div class="final-photo">
+                    <canvas id="finalCanvas" class="kawaii-border"></canvas>
+                </div>
+                <div class="button-group">
+                    <button class="btn" onclick="downloadPhoto()">💾 Download</button>
+                    <button class="btn secondary" onclick="startOver()">🔄 Start Over</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 28px;
+    color: #ff6b9d;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+}
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    background: #ff6b9d;
+    color: white;
+    transform: scale(1.2);
+}
+
+.photo-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.photo-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    background: #f0f0f0;
+    border-radius: 15px;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+}
+
+#mainPhoto {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 16px;
+}
+
+.camera-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#drawingCanvas {
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+}
+
+.controls {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+.control-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff6b9d;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(45deg, #ff6b9d, #ff8fab);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn.secondary {
+    background: linear-gradient(45deg, #a8e6cf, #88d8c0);
+    box-shadow: 0 4px 15px rgba(168, 230, 207, 0.3);
+}
+
+.btn.secondary:hover {
+    box-shadow: 0 6px 20px rgba(168, 230, 207, 0.4);
+}
+
+.btn.small {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+.file-input {
+    display: none;
+}
+
+.background-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.bg-option {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+}
+
+.bg-option:hover,
+.bg-option.selected {
+    border-color: #ff6b9d;
+    transform: scale(1.05);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.filter-option {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-size: 12px;
+}
+
+.filter-option:hover,
+.filter-option.selected {
+    border-color: #ff6b9d;
+    background: rgba(255, 107, 157, 0.2);
+}
+
+.sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.sticker {
+    font-size: 24px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sticker:hover {
+    background: rgba(255, 107, 157, 0.2);
+    transform: scale(1.1);
+}
+
+.drawing-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.color-picker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid white;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.brush-size {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#brushSize {
+    width: 80px;
+}
+
+.undo-redo {
+    display: flex;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.final-photo {
+    text-align: center;
+    padding: 20px 0;
+}
+
+#finalCanvas {
+    max-width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.kawaii-border {
+    border: 4px solid;
+    border-image: linear-gradient(45deg, #ff6b9d, #ffd93d, #6bcf7f, #4d9de0) 1;
+    animation: borderGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes borderGlow {
+    from { filter: brightness(1); }
+    to { filter: brightness(1.2); }
+}
+
+.placed-sticker {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    font-size: 30px;
+    z-index: 10;
+}
+
+.loading {
+    text-align: center;
+    color: #ff6b9d;
+    font-weight: bold;
+    padding: 10px;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .title {
+        font-size: 24px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+}
